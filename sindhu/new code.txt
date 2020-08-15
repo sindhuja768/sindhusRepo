@@ -1,0 +1,142 @@
+package myproject;
+
+import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.*;
+
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+
+public class demo extends JFrame{
+
+
+    private JButton b1;
+    private JLabel l1;
+    private ResultSet set;
+    int tnumber;
+
+    static final String JDBC_DRIVER = "com.mysql.jdbc.Driver";  
+	   static final String DB_URL = "jdbc:mysql://localhost:3306/banking";
+
+	   //  Database credentials
+	   static final String USER = "root";
+	   static final String PASS = "Passw0rd@";
+	   Connection conn = null;
+	   Statement stmt = null;
+    String server = "jdbc:mysql://localhost";
+    String user="tim";
+    String pass="u";
+    //query enter in textfield | select * from universty.student where rollno=2
+
+    public demo() throws ClassNotFoundException, SQLException{
+
+        super("Frame");
+          // Class.forName("com.mysql.jdbc.Driver");
+                    //conn = DriverManager.getConnection(server,user,pass);
+
+                    //state = (Statement) conn.createStatement();
+
+                    getContentPane().setLayout(null);
+                    
+                    
+                    Class.forName("com.mysql.cj.jdbc.Driver");
+
+                    //STEP 3: Open a connection
+                    System.out.println("Connecting to a selected database...");
+                    conn = DriverManager.getConnection(DB_URL, USER, PASS);
+                    System.out.println("Connected database successfully...");
+                    
+                    //STEP 4: Execute a query
+                    System.out.println("Creating statement...");
+                    stmt = conn.createStatement();
+                    
+
+
+                    l1= new JLabel();
+                    l1.setFont(new Font("Tahoma", Font.PLAIN, 22));
+                    l1.setBounds(35, 305, 384, 27);
+                    getContentPane().add(l1);
+        b1 = new JButton("Transfer");
+        b1.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent arg0) {
+
+                try{
+
+                	 String q1 = "select max(tnumber) from trandetails";
+                	ResultSet s1 = stmt.executeQuery(q1);
+                	 /*while(s1.next()){
+               		  int id  = s1.getInt("max(tnumber)");
+               		  System.out.println("max: " + id);
+               		  tnumber = tnumber + id;
+                	 }*/
+                	 
+                	 /*s1.next();
+                     String  ss = s1.getString(1);
+                     System.out.println("max:" + ss);
+                     tnumber = Integer.parseInt(ss) + 1;*/
+                     
+                	 String insertQuery = "INSERT INTO trandetails VALUES('T00023','A00001','2020-7-30','Transfer','Withdrawal',1000)";
+                	 stmt.executeUpdate(insertQuery);
+                	 String balanceQuery = "select sum(CASE WHEN transaction_type = 'Deposit' THEN transaction_amount WHEN transaction_type = 'Withdrawal' THEN -transaction_amount ELSE 0 END) as balance from trandetails group by acnumber";
+               // set = state.executeQuery(query);
+                set = stmt.executeQuery(balanceQuery);
+
+                
+                /*while(set.next()){
+             		  int id  = s1.getInt("balance");
+             		  System.out.println("balance: " + id);
+                }*/
+                set.next();
+                String  answer = set.getString(1);
+                System.out.println("result:" + answer);
+                
+                l1.setText("Balance:" + answer);
+            
+
+
+
+                }
+                catch (Exception e){
+                    JOptionPane.showMessageDialog( null, 
+                            e.getMessage(), "Database error", 
+                            JOptionPane.ERROR_MESSAGE );            
+                    return;
+                }
+                finally{
+                    try{
+                        set.close();
+                        stmt.close();
+                        conn.close();
+
+                    }
+                        catch(Exception e){
+                            e.printStackTrace();
+                        }
+
+                }
+
+            }});
+        b1.setBounds(132, 178, 129, 35);
+        getContentPane().add(b1);
+
+
+
+
+
+
+        setSize(450,450);
+        setLocationRelativeTo(null);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setResizable(false);
+        setVisible(true);
+
+    }   
+
+}
